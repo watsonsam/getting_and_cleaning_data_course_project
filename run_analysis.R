@@ -9,6 +9,7 @@
 library(dplyr)
 
 ## Unzip the data file
-print(list.files())
+
 unzip("getdata%2Fprojectfiles%2FUCI HAR Dataset.zip")
-print(list.files())
+
+
