@@ -34,7 +34,7 @@ colnames(xtest) <- featureNames
 xtrainActivities <- read.table("UCI HAR Dataset/train/y_train.txt")
 xtestActivities <- read.table("UCI HAR Dataset/test/y_test.txt")
 
-## Read in the activity names
+## Read in the activity names so we can provide desriptive names for the activities
 activityNames <- read.table("UCI HAR Dataset/activity_labels.txt")
 
 ## Add an Activity column to each of the tbls to identify the activity, joining on the activity names
