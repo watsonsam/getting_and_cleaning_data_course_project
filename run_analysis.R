@@ -55,7 +55,7 @@ xtest$subject <- xtestSubjects$V1
 harData <- rbind(xtrain, xtest)
 
 ## Apply the descriptive column names from the source data to the table, excluding the
-## final column which contains our added Subject variable.  (This partly fulfils the 
+## final column which contains our added subject variable.  (This partly fulfils the 
 ## requirement for step 4, labeling with descriptive variable names, but we do this step
 ## now while the data is in the original shape.)
 
@@ -65,7 +65,7 @@ names(harData)[1:ncol(harData) -1] <- featureNames
 ## the main mean and std columns, ignoring the additional vectors relating to the the angle 
 ## variable (i.e. angle(...)) and the meanFreq variable.
 
-harData <- select(harData, Subject, matches("\\.std\\."), matches("\\.mean\\."))
+harData <- select(harData, subject, matches("\\.std\\."), matches("\\.mean\\."))
 
 ## Step 3: Apply descriptive activity names
 
@@ -79,10 +79,10 @@ xtestActivities <- read.table("UCI HAR Dataset/test/y_test.txt")
 ## Join the two sets of activities
 Activities <- rbind(xtrainActivities, xtestActivities)
 
-## Add an Activity column to our main table to identify the activity, joining on the activity names
+## Add an activity column to our main table to identify the activity, joining on the activity names
 ## to provide descriptive activity names
 harData$activity <- left_join(Activities, activityNames)$V2
-## Keep the Subject and Activity variables at the beginning
+## Keep the subject and activity variables at the beginning
 harData <- harData %>% select(subject, activity, everything())
 
 

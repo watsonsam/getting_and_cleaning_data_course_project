@@ -14,4 +14,7 @@ The final data set has a header row, one variable per column, and all column nam
 
 The dplyr function 'summarise_all' was used to apply the R mean function to grouped data to generate the averaged data in the final data set.
 
-
+The final data set is called [average_har_data.txt](average_har_data.txt).  It can be read into R using the command
+```
+read.table("average_har_data.txt")
+```
