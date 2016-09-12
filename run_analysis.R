@@ -8,6 +8,23 @@
 
 library(dplyr)
 
+## makeNiceName is used later to create more human-readable names for the variables. The '.'
+## character is removed. Names are converted to lower case.  The '_' is used as a separator 
+## between the type of variable (mean or std) and the other parts of the name. 'mag' is converted
+## to 'magnitude' for further clarity.
+
+makeNiceName <- function(colname) {
+        parts <- strsplit(colname, "\\.")
+        parts <- parts[[1]][parts[[1]] != ""]
+        tmp <- if(length(parts) == 3) {
+                paste(parts[2], parts[1], parts[3], "axis", sep = "_")
+        } else if(length(parts) == 2) {
+                paste(parts[2], parts[1], sep = "_")
+        } else colname
+        
+        sub("mag", "magnitude", tolower(tmp))
+}
+
 ## Step 0: Extract the data from files into tbls so we can work with it
 
 ## Unzip the data file
@@ -24,32 +41,69 @@ xtrain <- tbl_df(xtrain)
 xtest <- tbl_df(xtest)
 
 ## Read in the column headings
-featureNames <- readLines("UCI HAR Dataset/features.txt")
+featureNames <- make.names(read.table("UCI HAR Dataset/features.txt", stringsAsFactors = F)$V2, unique = T)
 
-## Apply the column headings
-colnames(xtrain) <- featureNames
-colnames(xtest) <- featureNames
+## Read in the subject information
+xtrainSubjects <- read.table("UCI HAR Dataset/train/subject_train.txt")
+xtestSubjects <- read.table("UCI HAR Dataset/test/subject_test.txt")
+
+## Add the subject data as a column to the main data tables
+xtrain$subject <- xtrainSubjects$V1
+xtest$subject <- xtestSubjects$V1
+
+## Step 1: Merge the training and test datasets
+harData <- rbind(xtrain, xtest)
+
+## Apply the descriptive column names from the source data to the table, excluding the
+## final column which contains our added Subject variable.  (This partly fulfils the 
+## requirement for step 4, labeling with descriptive variable names, but we do this step
+## now while the data is in the original shape.)
+
+names(harData)[1:ncol(harData) -1] <- featureNames
+
+## Step 2: Extract only the measurements on the mean and standard deviation. We only include
+## the main mean and std columns, ignoring the additional vectors relating to the the angle 
+## variable (i.e. angle(...)) and the meanFreq variable.
+
+harData <- select(harData, Subject, matches("\\.std\\."), matches("\\.mean\\."))
+
+## Step 3: Apply descriptive activity names
+
+## Read in the activity names so we can provide descriptive names for the activities
+activityNames <- read.table("UCI HAR Dataset/activity_labels.txt")
 
 ## Read in the activities
 xtrainActivities <- read.table("UCI HAR Dataset/train/y_train.txt")
 xtestActivities <- read.table("UCI HAR Dataset/test/y_test.txt")
 
-## Read in the activity names so we can provide desriptive names for the activities
-activityNames <- read.table("UCI HAR Dataset/activity_labels.txt")
+## Join the two sets of activities
+Activities <- rbind(xtrainActivities, xtestActivities)
 
-## Add an Activity column to each of the tbls to identify the activity, joining on the activity names
+## Add an Activity column to our main table to identify the activity, joining on the activity names
 ## to provide descriptive activity names
-xtrain$Activity <- left_join(xtrainActivities, activityNames)$V2
-xtest$Activity <- left_join(xtestActivities, activityNames)$V2
+harData$activity <- left_join(Activities, activityNames)$V2
+## Keep the Subject and Activity variables at the beginning
+harData <- harData %>% select(subject, activity, everything())
 
-## Step 1: Merge the training and test datasets
-harData <- rbind(xtrain, xtest)
 
-## Save memory by removing everything we don't need
-rm(list = ls()[ls() != "harData"])
+## Step 4: We labeled the data set with variable names in step 1.  Now we tidy them up, removing
+## the '.' character, making clear that the X, Y and Z refer to the X, Y, and Z axes.
+names(harData) <- sapply(names(harData), makeNiceName)
 
-## Step 2: Extract only the measurements on the mean and standard deviation
+## Step 5: From the data set in step 4, create a second, independent tidy data set with the average 
+## of each variable for each activity and each subject.
 
-harData <- select(harData, Activity, matches("std()"), matches("mean()"))
+## Group the data by activity and subject
 
-## Step 3: We previously provided descriptive activity names
+hd2 <- group_by(harData, activity, subject)
+
+## Use the summarise_all function from dplyr to create a tbl with the average 
+## of each variable for each activity and each subject.
+
+hd3 <- summarise_all(hd2, mean)
+
+## rename the variables of the new tbl to emphasise and clarify that they are mean values
+
+names(hd3)[3:length(names(hd3))] <- sapply(names(hd3)[3:length(names(hd3))], paste0, "_average")
+
+write.table(hd3, file = "average_har_data.txt")
