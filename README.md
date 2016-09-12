@@ -10,7 +10,7 @@ Using the provided [data file](getdata%252Fprojectfiles%252FUCI%20HAR%20Dataset.
 4. Appropriately labels the data set with descriptive variable names.
 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
-The final data set has a header row, one variable per column, and all column names are lower case and use '_' as a separator where additional clarity is required.  The column names are explained in the included [code book](code_book.txt).
+The final data set has a header row, one variable per column, and all column names are lower case and use '_' as a separator where additional clarity is required.  The column names are explained in the included [code book](code_book.md).
 
 The dplyr function 'summarise_all' was used to apply the R mean function to grouped data to generate the averaged data in the final data set.
 
