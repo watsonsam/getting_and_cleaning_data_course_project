@@ -106,4 +106,4 @@ hd3 <- summarise_all(hd2, mean)
 
 names(hd3)[3:length(names(hd3))] <- sapply(names(hd3)[3:length(names(hd3))], paste0, "_average")
 
-write.table(hd3, file = "average_har_data.txt")
+write.table(hd3, file = "average_har_data.txt", row.names = F)
